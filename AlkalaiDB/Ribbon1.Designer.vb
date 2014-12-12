@@ -48,15 +48,19 @@
         Me.Group2 = Me.Factory.CreateRibbonGroup
         Me.btn_insertRow = Me.Factory.CreateRibbonButton
         Me.btn_deleteRow = Me.Factory.CreateRibbonButton
+        Me.Group3 = Me.Factory.CreateRibbonGroup
+        Me.btn_customQuery = Me.Factory.CreateRibbonButton
         Me.Tab1.SuspendLayout()
         Me.Group1.SuspendLayout()
         Me.Group2.SuspendLayout()
+        Me.Group3.SuspendLayout()
         '
         'Tab1
         '
         Me.Tab1.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office
         Me.Tab1.Groups.Add(Me.Group1)
         Me.Tab1.Groups.Add(Me.Group2)
+        Me.Tab1.Groups.Add(Me.Group3)
         Me.Tab1.Label = "TabAddIns"
         Me.Tab1.Name = "Tab1"
         '
@@ -99,6 +103,17 @@
         Me.btn_deleteRow.Label = "Delete Row"
         Me.btn_deleteRow.Name = "btn_deleteRow"
         '
+        'Group3
+        '
+        Me.Group3.Items.Add(Me.btn_customQuery)
+        Me.Group3.Label = "Group3"
+        Me.Group3.Name = "Group3"
+        '
+        'btn_customQuery
+        '
+        Me.btn_customQuery.Label = "Custom Query"
+        Me.btn_customQuery.Name = "btn_customQuery"
+        '
         'Ribbon1
         '
         Me.Name = "Ribbon1"
@@ -110,6 +125,8 @@
         Me.Group1.PerformLayout()
         Me.Group2.ResumeLayout(False)
         Me.Group2.PerformLayout()
+        Me.Group3.ResumeLayout(False)
+        Me.Group3.PerformLayout()
 
     End Sub
 
@@ -120,6 +137,8 @@
     Friend WithEvents Group2 As Microsoft.Office.Tools.Ribbon.RibbonGroup
     Friend WithEvents btn_insertRow As Microsoft.Office.Tools.Ribbon.RibbonButton
     Friend WithEvents btn_deleteRow As Microsoft.Office.Tools.Ribbon.RibbonButton
+    Friend WithEvents Group3 As Microsoft.Office.Tools.Ribbon.RibbonGroup
+    Friend WithEvents btn_customQuery As Microsoft.Office.Tools.Ribbon.RibbonButton
 End Class
 
 Partial Class ThisRibbonCollection

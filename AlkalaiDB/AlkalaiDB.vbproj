@@ -180,6 +180,12 @@
   -->
   <ItemGroup>
     <AppDesigner Include="My Project\" />
+    <Compile Include="CustomQueryForm.Designer.vb">
+      <DependentUpon>CustomQueryForm.vb</DependentUpon>
+    </Compile>
+    <Compile Include="CustomQueryForm.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Entry.vb" />
     <Compile Include="Handler.vb" />
     <Compile Include="Parser.vb" />
@@ -192,6 +198,9 @@
     <Compile Include="ThisAddIn.vb">
       <SubType>Code</SubType>
     </Compile>
+    <EmbeddedResource Include="CustomQueryForm.resx">
+      <DependentUpon>CustomQueryForm.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Ribbon1.resx">
       <DependentUpon>Ribbon1.vb</DependentUpon>
     </EmbeddedResource>

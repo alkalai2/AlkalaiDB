@@ -6,6 +6,7 @@ Imports System.Drawing
 
 
 Public Class Entry
+
     '   
     '   Will hold all the data pretaining to an inputted table object
     '       loc - location of table ( upper-left cell of selection area )
@@ -27,13 +28,13 @@ Public Class Entry
     Public rows As Integer
     Public cols As Integer
 
-    Public Sub New(r As Excel.Range)
+    Public Sub New(r As Excel.Range, Optional ByVal attr As String() = Nothing)
         range = r
         loc = r(1)
-        tname = r(1).Value.ToString
+        tname = r(1).value.ToString
         rows = r.Rows.Count
         cols = r.Columns.Count
-
+        attr = attr
         list_of_entries.Add(Me)
 
     End Sub
@@ -55,10 +56,17 @@ Public Class Entry
     '
 
     Public Function createTable()
-
-        Dim connection As NpgsqlConnection = New NpgsqlConnection()
+        Dim connection As NpgsqlConnection
         Dim command As NpgsqlCommand
         Dim sql As String
+        Try
+            connection = New NpgsqlConnection()
+           
+        Catch e As NpgsqlException
+            MsgBox(e.BaseMessage)
+            Return Nothing
+        End Try
+
 
         connection.ConnectionString = "Server=localhost;Port=5432;Database=VB;User Id=postgres;Password=Oijoij123;"
         connection.Open()
@@ -80,10 +88,10 @@ Public Class Entry
         sql = sql + ");"
 
         ' execute SQL
-        command = New NpgsqlCommand(sql, connection)
+        Command = New NpgsqlCommand(sql, connection)
         Try
-            command.ExecuteNonQuery()
-            MsgBox("executed  " + sql)
+            Command.ExecuteNonQuery()
+            'MsgBox("executed  " + sql)
         Catch e As NpgsqlException
             MsgBox(e.BaseMessage)
             createTable = 0
@@ -112,10 +120,10 @@ Public Class Entry
 
             'execute SQL
             sql = sql + ");"
-            command = New NpgsqlCommand(sql, connection)
+            Command = New NpgsqlCommand(sql, connection)
             Try
-                command.ExecuteNonQuery()
-                MsgBox("executed  " + sql)
+                Command.ExecuteNonQuery()
+                'MsgBox("executed  " + sql)
             Catch e As NpgsqlException
                 MsgBox(e.BaseMessage)
                 createTable = 0
@@ -141,7 +149,7 @@ Public Class Entry
         command = New NpgsqlCommand(sql, connection)
         Try
             command.ExecuteNonQuery()
-            MsgBox("executed  " + sql)
+            ' MsgBox("executed  " + sql)
         Catch ex As NpgsqlException
             MsgBox(ex.BaseMessage)
             Return 0
@@ -180,7 +188,7 @@ Public Class Entry
         command = New NpgsqlCommand(sql, connection)
         Try
             command.ExecuteNonQuery()
-            MsgBox("executed  " + sql)
+            'MsgBox("executed  " + sql)
         Catch ex As NpgsqlException
             MsgBox(ex.BaseMessage)
             insertRow = 0
@@ -206,7 +214,7 @@ Public Class Entry
             command.ExecuteNonQuery()
             MsgBox("executed  " + sql)
         Catch ex As NpgsqlException
-            MsgBox(ex.BaseMessage)
+            ' MsgBox(ex.BaseMessage)
             deleteRow = 0
             Exit Function
         End Try
@@ -234,14 +242,14 @@ Public Class Entry
         command = New NpgsqlCommand(sql, connection)
         Try
             command.ExecuteNonQuery()
-            MsgBox("populating: " + sql)
+            ' MsgBox("populating: " + sql)
         Catch e As NpgsqlException
             MsgBox(e.BaseMessage)
             Exit Sub
         End Try
 
         Dim reader As NpgsqlDataReader = command.ExecuteReader
-        Dim result As New ArrayList()
+
 
         Dim count As Integer = 0
 
@@ -268,11 +276,11 @@ Public Class Entry
 
 
         ' set more styles
-        range.Interior.Color = ColorTranslator.FromHtml(RGB(221, 235, 247))
+        range.Interior.Color = ColorTranslator.FromHtml("#F2F8FC")
         'range.Borders(Excel.XlLineStyle.xlContinuous).Color = Color.LightGray
         loc.Font.Bold = True
         loc.Value = loc.Value.ToString.ToUpper
-        Dim r As Excel.Range = xlApp.Range(loc.Cells(2, 1), loc.Cells(2, cols)) ' attrib
+        Dim r As Excel.Range = xlApp.Range(loc.Cells(2, 1), loc.Cells(2, reader.FieldCount)) ' attrib
         r.Borders(Excel.XlBordersIndex.xlEdgeBottom).Color = Color.Black
     End Sub
 

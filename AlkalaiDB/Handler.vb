@@ -1,4 +1,5 @@
 ﻿Imports System.Collections
+Imports Npgsql
 
 Module Handler
     ' keep track of created entries
@@ -12,8 +13,9 @@ Module Handler
         For Each e As Entry In list_of_entries
             If (inserting = True) Then
                 ' for row insertions, row must be directly underneath existing table
-                If xlApp.Intersect(loc.Cells(0, 1), e.range) IsNot Nothing And xlApp.Intersect(loc.Cells(1, 1), e.range) Is Nothing Then
+                If xlApp.Intersect(loc(1).Cells(0, 1), e.range) IsNot Nothing And xlApp.Intersect(loc(1).Cells(1, 1), e.range) Is Nothing Then
                     'check that row of correct size is inputted
+
                     If (loc.Columns.Count = e.cols) Then
                         found = e
                         MsgBox("found: " + e.tname)
@@ -22,7 +24,7 @@ Module Handler
                 End If
             Else
                 ' for row deletions, row must be within table
-                If xlApp.Intersect(loc.Cells(1, 1), e.range) IsNot Nothing Then
+                If xlApp.Intersect(loc(1).Cells(1, 1), e.range) IsNot Nothing Then
                     found = e
                     MsgBox("found: " + e.tname)
                     Return found
@@ -46,26 +48,46 @@ Module Handler
         MsgBox(list_of_entries.Count)
         Return Nothing
     End Function
-    Public Sub delegateEvent()
-        Dim EventDel_CellsChange As Excel.DocEvents_ChangeEventHandler
-        Dim xlSheet As Excel.Worksheet = Globals.ThisAddIn.Application.ActiveSheet
-        EventDel_CellsChange = New Excel.DocEvents_ChangeEventHandler(AddressOf CellsChange)
-        AddHandler xlSheet.Change, EventDel_CellsChange
-    End Sub
 
-    Private Sub CellsChange(ByVal Target As Excel.Range)
-        'This is called when a cell or cells on a worksheet are changed.
 
-        ' see if changed cell is part of a table
-        Dim found As Entry
-        For Each e As Entry In list_of_entries
-            If xlApp.Intersect(Target, e.range) IsNot Nothing Then
+    Public Function executeSQL(sql As String, Optional ByVal newTname As String = Nothing)
 
-                MsgBox("found: " + e.tname)
-                found = e
+        Dim connection As NpgsqlConnection = New NpgsqlConnection()
+        Dim command, command2 As NpgsqlCommand
+        Dim reader As NpgsqlDataReader
+        connection.ConnectionString = "Server=localhost;Port=5432;Database=VB;User Id=postgres;Password=Oijoij123;"
+        connection.Open()
+
+        'command = New NpgsqlCommand(sql, connection)
+
+        Try
+            'command.ExecuteNonQuery()
+
+            'execute and populate from query
+            If (IsNothing(newTname)) Then
+                command = New NpgsqlCommand(sql, connection)
+
+                reader = command.ExecuteReader()
+            Else
+                sql = Replace(sql.ToLower, "from", " into table " + newTname + " from ")
+                command = New NpgsqlCommand(sql, connection)
+                command.ExecuteNonQuery()
+                command2 = New NpgsqlCommand("select * from " + newTname + ";", connection)
+                command2.ExecuteNonQuery()
+                reader = command2.ExecuteReader
+
             End If
-        Next
-    End Sub
+        Catch ex As NpgsqlException
+            MsgBox(ex.BaseMessage)
+            Return Nothing
+            Exit Function
+        End Try
+        MsgBox("your sql:   " + sql)
+
+
+        Return reader
+
+    End Function
 
 
 End Module

@@ -10,7 +10,6 @@
                 Dim str As String
                 str = e.loc.Cells(i + 1, j + 1).value.ToString
                 vals(i - 2, j) = str
-
             Next
         Next
         getTableValues = vals
@@ -47,6 +46,7 @@
 
     ' param: the left-most cell of excel row ; length of inputted row
     Public Function getRowValues(r As Excel.Range, len As Integer)
+
         If ((r Is Nothing) = False) Then
             Dim vals(len) As String
             For i As Integer = 0 To len - 1

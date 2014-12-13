@@ -28,10 +28,11 @@ Public Class Entry
     Public attr As String()
     Public types As String()
     Public constr As String()
-
     Public rows As Integer
     Public cols As Integer
 
+    ' to be able to enable / disable change listener
+    Public allowEventChanges = False
     Public Sub New(r As Excel.Range, Optional ByVal attr As String() = Nothing)
         range = r
         loc = r(1)
@@ -110,7 +111,7 @@ Public Class Entry
         Command = New NpgsqlCommand(sql, connection)
         Try
             Command.ExecuteNonQuery()
-            MsgBox("executed  " + sql)
+            'MsgBox("executed  " + sql)
         Catch e As NpgsqlException
             MsgBox(e.BaseMessage)
             createTable = 0
@@ -142,7 +143,7 @@ Public Class Entry
             Command = New NpgsqlCommand(sql, connection)
             Try
                 Command.ExecuteNonQuery()
-                MsgBox("executed  " + sql)
+                'MsgBox("executed  " + sql)
             Catch e As NpgsqlException
                 MsgBox(e.BaseMessage)
                 createTable = 0
@@ -153,6 +154,8 @@ Public Class Entry
         MsgBox("all done")
 
         'add entry to our list
+        Me.onChangeEvent()
+        allowEventChanges = True
         list_of_entries.Add(Me)
         createTable = 1
     End Function
@@ -182,15 +185,20 @@ Public Class Entry
     End Function
 
     ' 
-    Public Function insertRow(r As Excel.Range, len As Integer)
+    Public Function insertRow(r As Excel.Range, len As Integer, Optional ByVal input As String() = Nothing)
         Dim connection As NpgsqlConnection = New NpgsqlConnection()
         Dim command As NpgsqlCommand
         Dim sql As String
 
+        allowEventChanges = False
         connection.ConnectionString = "Server=localhost;Port=5432;Database=VB;User Id=postgres;Password=Oijoij123;"
         connection.Open()
         Dim vals(len) As String
-        vals = getRowValues(r, len)
+        If (IsNothing(input)) Then
+            vals = getRowValues(r, len)
+        Else
+            vals = input
+        End If
         ' create SQL insert statement for each row
         Dim sep As String = ""
         sql = "INSERT INTO " + tname + " Values("
@@ -224,36 +232,57 @@ Public Class Entry
         Dim command As NpgsqlCommand
         Dim sql As String
         Dim temp As String
+
+        'disable event listener
+        allowEventChanges = False
+
         connection.ConnectionString = "Server=localhost;Port=5432;Database=VB;User Id=postgres;Password=Oijoij123;"
         connection.Open()
         Dim vals As String() = getRowValues(r, len)
         temp = r.Address
 
         sql = "DELETE from " + tname + " where "
+
+        Dim sep As String = ""
         For i As Integer = 0 To constr.Count - 1
             If (InStr(constr(i), "PRIMARY KEY")) Then
-                sql = sql + attr(i) + " " + vals(i)
+
+                If InStr(types(i), "character(30)") > 0 Then
+                    ' add quotes for strings
+                    sql = sql + sep + attr(i) + " = '" + vals(i) + "' "
+                Else
+                    sql = sql + sep + attr(i) + " = " + vals(i)
+                End If
+
+                sep = "AND"
             End If
+
         Next
 
         command = New NpgsqlCommand(sql, connection)
+        '  MsgBox("executed  " + sql)
         Try
             command.ExecuteNonQuery()
-            MsgBox("executed  " + sql)
+
         Catch ex As NpgsqlException
             MsgBox(ex.BaseMessage)
             deleteRow = 0
             Exit Function
             Return Nothing
+
         End Try
+
 
         Dim toDelete As Excel.Range = xlApp.Range(r, r.Cells(rows, cols))
         temp = toDelete.Address
         toDelete.Clear()
+
+        allowEventChanges = True
         deleteRow = 1
     End Function
 
     Public Sub populateTableValues()
+
         Dim sheet As Excel.Worksheet = xlApp.ActiveSheet
         ' Dim style As Excel.Style = xlApp.ActiveWorkbook.Styles.Add("ValueStyle")
         ' style.Interior.Color = ColorTranslator.ToOle(ColorTranslator.FromHtml("#f5f5f5"))
@@ -286,6 +315,7 @@ Public Class Entry
         ' Read value from db and populate excel
         While reader.Read()
             For i As Integer = 0 To reader.FieldCount - 1
+                allowEventChanges = False
                 With loc.Cells(count + 3, i + 1)
                     .value = reader.Item(i)
                     .Borders(Excel.XlBordersIndex.xlEdgeBottom).Color = Color.LightGray
@@ -312,6 +342,8 @@ Public Class Entry
         loc.Value = loc.Value.ToString.ToUpper
         Dim r As Excel.Range = xlApp.Range(loc.Cells(2, 1), loc.Cells(2, reader.FieldCount)) ' attrib
         r.Borders(Excel.XlBordersIndex.xlEdgeBottom).Color = Color.Black
+
+        allowEventChanges = True
     End Sub
 
 
@@ -326,14 +358,38 @@ Public Class Entry
 
     Private Sub CellsChange(ByVal Target As Excel.Range)
         'This is called when a cell or cells on a worksheet are changed.
+        Dim temp = allowEventChanges
+        If (allowEventChanges = True) Then
+            allowEventChanges = False
 
-        ' see if changed cell is part of a table
+            ' see if changed cell is part of a table
+            Dim valueRange As Excel.Range = xlApp.Range(loc.Cells(3, 1), loc.Cells(rows, cols))
 
-        If xlApp.Intersect(Target, range) IsNot Nothing Then
+            If xlApp.Intersect(Target, valueRange) IsNot Nothing Then
+                'MsgBox("found: " + tname)
+                Dim rowOffset = Target.Row - loc.Row + 1
+                Dim updateRange = xlApp.Range(loc.Cells(rowOffset, 1), loc.Cells(rowOffset, cols))
+                'MsgBox("updating range: " + updateRange.Address)
 
-            MsgBox("found: " + tname)
+                'collect values in updating range
+                Dim vals(cols - 1) As String
+                For i = 0 To cols - 1
+                    vals(i) = updateRange.Cells(1, i + 1).value
+                Next
+
+
+                deleteRow(updateRange, cols)
+                insertRow(updateRange, cols, vals)
+                populateTableValues()
+                allowEventChanges = True
+
+            End If
+
         End If
 
+
+        Exit Sub
+        allowEventChanges = True
     End Sub
 
 

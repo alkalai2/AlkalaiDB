@@ -1,6 +1,7 @@
 ﻿Public Class CreateTableForm
     Public entry As Entry
     Public range As Excel.Range
+
     Private Sub CreateTableForm_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         range = xlApp.Range(xlApp.ActiveCell, xlApp.ActiveCell.Cells(xlApp.Selection.rows.count, xlApp.Selection.columns.count))
         entry = New Entry(range)
@@ -21,15 +22,31 @@
 
     Private Sub btn_createFormCreate_Click(sender As Object, e As EventArgs) Handles btn_createFormCreate.Click
 
+        ' check pk
+        Dim pks As Integer = 0
+        For i = 0 To entry.constr.Count - 1
+            If (InStr(entry.constr(i), "PRIMARY KEY")) Then
+                pks = pks + 1
+            End If
+        Next
+        If (pks > 1) Then
+            MsgBox("Please selct one Primary Key")
+            Return
+        End If
+
+
         Dim result As Integer = 0
         result = entry.createTable()
         If (result = 1) Then
             'populate excel with DB data
+            entry.allowEventChanges = False
             entry.populateTableValues()
             ' change event for tables
             MsgBox(entry.range.ToString)
             entry.onChangeEvent()
         End If
+
+        
 
         Me.Close()
     End Sub
@@ -45,6 +62,8 @@
                 combo_createFormDataTypes.SelectedIndex = i
             End If
         Next
+        check_createFormPK.Checked = InStr(entry.constr(index), "PRIMARY KEY") > 0
+        check_createFormNotNull.Checked = InStr(entry.constr(index), "NOT NULL") > 0
 
     End Sub
 
@@ -55,13 +74,15 @@
     End Sub
 
     Private Sub check_createFormPK_CheckedChanged(sender As Object, e As EventArgs) Handles check_createFormPK.CheckedChanged
+
         Dim index As Integer = list_createFormAttributes.SelectedIndex
         If (check_createFormPK.Checked = True) Then
-            entry.constr(index) = entry.constr(index) + " PRIMARY KEY "
+            entry.constr(index) = entry.constr(index) + "  PRIMARY KEY "
+
         Else
             entry.constr(index) = Replace(entry.constr(index), "PRIMARY KEY", "")
-        End If
 
+        End If
 
     End Sub
 

@@ -18,7 +18,7 @@
 
 
     Public Function getTableAttributes(ByRef e As Entry)
-        Dim attr(e.cols) As String
+        Dim attr(e.cols - 1) As String
         Dim str As String
         For i As Integer = 0 To e.cols - 1
             str = e.loc.Cells(2, i + 1).value.ToString
@@ -28,21 +28,21 @@
         getTableAttributes = attr
     End Function
 
-    Public Function getTableConstraints(ByRef e As Entry)
-        Dim constr(e.cols) As String
+    Public Function getTableTypes(ByRef e As Entry)
+        Dim types(e.cols - 1) As String
         Dim type As String
         For i As Integer = 0 To e.cols - 1
             type = TypeName(e.loc.Cells(3, i + 1).value)
             If type = "String" Then
-                type = "character(50)"
+                type = "character(30)"
             End If
             If type = "Double" Then
                 type = "real"
             End If
-            constr(i) = type
+            types(i) = type
 
         Next
-        getTableConstraints = constr
+        getTableTypes = types
     End Function
 
     ' param: the left-most cell of excel row ; length of inputted row

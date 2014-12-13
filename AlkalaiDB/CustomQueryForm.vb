@@ -25,12 +25,15 @@ Public Class CustomQueryForm
 
         reader = executeSQL(txt_customQuery.Text, newTname)
 
-        Dim newAttributes(reader.FieldCount) As String
+        Dim newAttributes(reader.FieldCount - 1) As String
+        Dim newTypes(reader.FieldCount - 1) As String
         Dim count As Integer
         While reader.Read()
             For i As Integer = 0 To reader.FieldCount - 1
                 newAttributes(i) = reader.GetName(i)
-
+                newTypes(i) = reader.GetProviderSpecificFieldType(i).ToString
+                MsgBox(newAttributes(i))
+                MsgBox(newTypes(i))
                 With loc.Cells(count + 1 + offset, i + 1)
                     .value = reader.Item(i)
                     .Borders(Excel.XlBordersIndex.xlEdgeBottom).Color = Color.LightGray
@@ -40,27 +43,37 @@ Public Class CustomQueryForm
 
                 End With
 
-                ' loc.Cells(count + 3, i + 1).value = reader.Item(i)
-                ' Borders(Excel.XlBordersIndex.xlEdgeBottom).Color = Color.Gray
-                'apply style to data cells
-                ' loc.Cells(count + 3, i + 1).style = "ValueStyle"
-
             Next
             count = count + 1
         End While
 
+        range = xlApp.Range(loc, loc.Cells(count + offset, reader.FieldCount))
+
         ' if making a new table, set newtable name + attributes
         If (newTable) Then
-            loc.Value = newTname
-            For i = 0 To reader.FieldCount - 1
-                loc.Cells(2, i + 1).value = newAttributes(i)
-            Next
-        End If
+            
 
-        range = xlApp.Range(loc, loc.Cells(count + offset, reader.FieldCount))
-        Dim v As String = range.Address
-        ' create entry element for new table
-        entry = New Entry(range)
+            With loc
+                .Value = newTname.ToUpper
+                .Font.Bold = True
+            End With
+
+
+            For i = 0 To reader.FieldCount - 1
+                With loc.Cells(2, i + 1)
+                    .value = newAttributes(i)
+                    .Borders(Excel.XlBordersIndex.xlEdgeBottom).Color = Color.Black
+                End With
+            Next
+
+            entry = New Entry(range, newAttributes)
+            entry.onChangeEvent()
+            entry.types = getTableTypes(entry)
+            MsgBox("new table made with address " + entry.range.Address)
+            'styles
+            range.Interior.Color = ColorTranslator.FromHtml("#F2F8FC")
+        End If
+        
         Me.Close()
     End Sub
 

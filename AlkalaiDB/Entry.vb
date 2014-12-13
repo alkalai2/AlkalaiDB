@@ -9,12 +9,14 @@ Public Class Entry
 
     '   
     '   Will hold all the data pretaining to an inputted table object
-    '       loc - location of table ( upper-left cell of selection area )
-    '       tname - Table Name
-    '       rows  - row dimension of table
-    '       attr  - array of attribute values (columns)
-    '       constr- array of attribute types
-    '       cols  - column dimenions of table
+    '       loc    - location of table ( upper-left cell of selection area )
+    '       tname  - Table Name
+    '       rows   - row dimension of table
+    '       attr   - array of attribute values (columns)
+    '       types  - array of attribute types
+    '       constr - array of attribute constraints (PRIMARY KEY, NOT NULL)
+
+    '       cols   - column dimenions of table
 
     Public xlApp As Excel.Application = Globals.ThisAddIn.Application
 
@@ -24,7 +26,9 @@ Public Class Entry
     Public range As Excel.Range
     Public tname As String
     Public attr As String()
+    Public types As String()
     Public constr As String()
+
     Public rows As Integer
     Public cols As Integer
 
@@ -34,8 +38,23 @@ Public Class Entry
         tname = r(1).value.ToString
         rows = r.Rows.Count
         cols = r.Columns.Count
-        attr = attr
-        list_of_entries.Add(Me)
+
+
+        If (IsNothing(attr)) Then
+            Me.attr = getTableAttributes(Me)
+        Else
+            Me.attr = attr
+        End If
+
+        types = getTableTypes(Me)
+
+        ' intialize constr jankily
+        Dim temp(cols) As String
+        For i As Integer = 0 To cols - 1
+            temp(i) = " "
+        Next
+        constr = temp
+
 
     End Sub
 
@@ -76,13 +95,13 @@ Public Class Entry
 
         ' use parser to form arrays
         attr = getTableAttributes(Me)
-        constr = getTableConstraints(Me)
+        types = getTableTypes(Me)
 
         ' create SQL statement
         sql = "CREATE TABLE " + tname + " ("
         Dim sep As String = ""
         For i As Integer = 0 To size - 1
-            sql = sql + sep + attr(i) + " " + constr(i)
+            sql = sql + sep + attr(i) + " " + types(i) + " " + constr(i)
             sep = ", "
         Next
         sql = sql + ");"
@@ -91,7 +110,7 @@ Public Class Entry
         Command = New NpgsqlCommand(sql, connection)
         Try
             Command.ExecuteNonQuery()
-            'MsgBox("executed  " + sql)
+            MsgBox("executed  " + sql)
         Catch e As NpgsqlException
             MsgBox(e.BaseMessage)
             createTable = 0
@@ -109,7 +128,7 @@ Public Class Entry
             sep = ""
             sql = "INSERT INTO " + tname + " Values("
             For j As Integer = 0 To cols - 1
-                If InStr(constr(j), "character(50)") > 0 Then
+                If InStr(types(j), "character(30)") > 0 Then
                     sql = sql + sep + " ' " + vals(j) + " ' "
                 Else
                     sql = sql + sep + vals(j)
@@ -123,7 +142,7 @@ Public Class Entry
             Command = New NpgsqlCommand(sql, connection)
             Try
                 Command.ExecuteNonQuery()
-                'MsgBox("executed  " + sql)
+                MsgBox("executed  " + sql)
             Catch e As NpgsqlException
                 MsgBox(e.BaseMessage)
                 createTable = 0
@@ -133,6 +152,8 @@ Public Class Entry
 
         MsgBox("all done")
 
+        'add entry to our list
+        list_of_entries.Add(Me)
         createTable = 1
     End Function
 
@@ -174,7 +195,7 @@ Public Class Entry
         Dim sep As String = ""
         sql = "INSERT INTO " + tname + " Values("
         For j As Integer = 0 To cols - 1
-            If InStr(constr(j), "character(50)") > 0 Then
+            If InStr(types(j), "character(30)") > 0 Then
                 sql = sql + sep + " ' " + vals(j) + " ' "
             Else
                 sql = sql + sep + vals(j)
@@ -202,23 +223,32 @@ Public Class Entry
         Dim connection As NpgsqlConnection = New NpgsqlConnection()
         Dim command As NpgsqlCommand
         Dim sql As String
-
+        Dim temp As String
         connection.ConnectionString = "Server=localhost;Port=5432;Database=VB;User Id=postgres;Password=Oijoij123;"
         connection.Open()
         Dim vals As String() = getRowValues(r, len)
+        temp = r.Address
 
-        sql = "DELETE from " + tname + " where " + attr(0) + " = " + vals(0)
+        sql = "DELETE from " + tname + " where "
+        For i As Integer = 0 To constr.Count - 1
+            If (InStr(constr(i), "PRIMARY KEY")) Then
+                sql = sql + attr(i) + " " + vals(i)
+            End If
+        Next
 
         command = New NpgsqlCommand(sql, connection)
         Try
             command.ExecuteNonQuery()
             MsgBox("executed  " + sql)
         Catch ex As NpgsqlException
-            ' MsgBox(ex.BaseMessage)
+            MsgBox(ex.BaseMessage)
             deleteRow = 0
             Exit Function
+            Return Nothing
         End Try
+
         Dim toDelete As Excel.Range = xlApp.Range(r, r.Cells(rows, cols))
+        temp = toDelete.Address
         toDelete.Clear()
         deleteRow = 1
     End Function
@@ -283,13 +313,6 @@ Public Class Entry
         Dim r As Excel.Range = xlApp.Range(loc.Cells(2, 1), loc.Cells(2, reader.FieldCount)) ' attrib
         r.Borders(Excel.XlBordersIndex.xlEdgeBottom).Color = Color.Black
     End Sub
-
-
-
-
-
-
-
 
 
 

@@ -23,9 +23,11 @@ Public Class Ribbon1
         End If
         found.insertRow(xlApp.ActiveCell, xlApp.Selection.columns.count)
         'update range/size of entry
-        found.range = xlApp.Range(found.loc, found.loc.Cells(found.rows + 1, found.cols))
+        'found.range = xlApp.Range(found.loc, found.loc.Cells(found.rows + 1, found.cols))
         found.populateTableValues()
-        MsgBox(found.range.Address)
+        'MsgBox(found.range.Address)
+        Dim valueRange As Excel.Range = xlApp.Range(found.loc.Cells(3, 1), found.loc.Cells(found.rows, found.cols))
+        'MsgBox(valueRange.Address)
 
     End Sub
 
@@ -36,9 +38,11 @@ Public Class Ribbon1
         End If
         found.deleteRow(xlApp.ActiveCell, xlApp.Selection.columns.count)
         'update range/size of entry
-        found.range = xlApp.Range(found.loc, found.loc.Cells(found.rows - 1, found.cols))
+        'found.range = xlApp.Range(found.loc, found.loc.Cells(found.rows - 1, found.cols))
         found.populateTableValues()
-        MsgBox(found.range.Address)
+        'MsgBox(found.range.Address)
+        Dim valueRange As Excel.Range = xlApp.Range(found.loc.Cells(3, 1), found.loc.Cells(found.rows, found.cols))
+        'MsgBox(valueRange.Address)
     End Sub
 
 

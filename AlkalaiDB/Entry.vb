@@ -88,7 +88,7 @@ Public Class Entry
         End Try
 
 
-        connection.ConnectionString = "Server=localhost;Port=5432;Database=VB;User Id=postgres;Password=Oijoij123;"
+        connection.ConnectionString = "Server=localhost;Port=5432;Database=MyDB;User Id=postgres;Password=Oijoij123;"
         connection.Open()
 
 
@@ -151,7 +151,7 @@ Public Class Entry
             End Try
         Next
 
-        MsgBox("all done")
+        MsgBox("Table '" + tname.ToUpper + "' created")
 
         'add entry to our list
         Me.onChangeEvent()
@@ -165,13 +165,14 @@ Public Class Entry
         Dim command As NpgsqlCommand
         Dim sql As String
 
-        connection.ConnectionString = "Server=localhost;Port=5432;Database=VB;User Id=postgres;Password=Oijoij123;"
-        connection.Open()
-
-        sql = "DROP table " + tname + ";"
-
-        command = New NpgsqlCommand(sql, connection)
         Try
+            connection.ConnectionString = "Server=localhost;Port=5432;Database=MyDB;User Id=postgres;Password=Oijoij123;"
+            connection.Open()
+
+            sql = "DROP table " + tname + ";"
+
+            command = New NpgsqlCommand(sql, connection)
+
             command.ExecuteNonQuery()
             ' MsgBox("executed  " + sql)
         Catch ex As NpgsqlException
@@ -179,9 +180,12 @@ Public Class Entry
             Return 0
         End Try
 
+        'removing table, disable event handler
+        allowEventChanges = False
         range.Clear()
         MsgBox(tname + " deleted")
         deleteTable = 1
+
     End Function
 
     ' 
@@ -190,9 +194,14 @@ Public Class Entry
         Dim command As NpgsqlCommand
         Dim sql As String
 
-        allowEventChanges = False
-        connection.ConnectionString = "Server=localhost;Port=5432;Database=VB;User Id=postgres;Password=Oijoij123;"
-        connection.Open()
+        Try
+            allowEventChanges = False
+            connection.ConnectionString = "Server=localhost;Port=5432;Database=MyDB;User Id=postgres;Password=Oijoij123;"
+            connection.Open()
+        Catch e As NpgsqlException
+            MsgBox(e.BaseMessage)
+            Return Nothing
+        End Try
         Dim vals(len) As String
         If (IsNothing(input)) Then
             vals = getRowValues(r, len)
@@ -223,6 +232,8 @@ Public Class Entry
             insertRow = 0
             Exit Function
         End Try
+        Me.range = xlApp.Range(loc, loc.Cells(rows + 1, cols))
+        Me.rows = rows + 1
         insertRow = 1
     End Function
 
@@ -236,17 +247,23 @@ Public Class Entry
         'disable event listener
         allowEventChanges = False
 
-        connection.ConnectionString = "Server=localhost;Port=5432;Database=VB;User Id=postgres;Password=Oijoij123;"
-        connection.Open()
+        Try
+            connection.ConnectionString = "Server=localhost;Port=5432;Database=MyDB;User Id=postgres;Password=Oijoij123;"
+            connection.Open()
+        Catch e As NpgsqlException
+            MsgBox(e.BaseMessage)
+            Return Nothing
+        End Try
         Dim vals As String() = getRowValues(r, len)
         temp = r.Address
 
         sql = "DELETE from " + tname + " where "
 
+        Dim foundPK = False
         Dim sep As String = ""
         For i As Integer = 0 To constr.Count - 1
             If (InStr(constr(i), "PRIMARY KEY")) Then
-
+                foundPK = True
                 If InStr(types(i), "character(30)") > 0 Then
                     ' add quotes for strings
                     sql = sql + sep + attr(i) + " = '" + vals(i) + "' "
@@ -256,8 +273,17 @@ Public Class Entry
 
                 sep = "AND"
             End If
-
         Next
+
+        ' no primary key, use first attribute
+        If (foundPK = False) Then
+            If InStr(types(0), "character(30)") > 0 Then
+                ' add quotes for strings
+                sql = sql + sep + attr(0) + " = '" + vals(0) + "' "
+            Else
+                sql = sql + sep + attr(0) + " = " + vals(0)
+            End If
+        End If
 
         command = New NpgsqlCommand(sql, connection)
         '  MsgBox("executed  " + sql)
@@ -274,9 +300,11 @@ Public Class Entry
 
 
         Dim toDelete As Excel.Range = xlApp.Range(r, r.Cells(rows, cols))
-        temp = toDelete.Address
         toDelete.Clear()
 
+        'range decreases by 1
+        Me.range = xlApp.Range(loc, loc.Cells(rows - 1, cols))
+        Me.rows = rows - 1
         allowEventChanges = True
         deleteRow = 1
     End Function
@@ -293,57 +321,62 @@ Public Class Entry
         Dim command As NpgsqlCommand
         Dim sql As String
 
-        connection.ConnectionString = "Server=localhost;Port=5432;Database=VB;User Id=postgres;Password=Oijoij123;"
-        connection.Open()
-
-        sql = "SELECT * FROM " + tname + ";"
-
-        command = New NpgsqlCommand(sql, connection)
         Try
-            command.ExecuteNonQuery()
-            ' MsgBox("populating: " + sql)
-        Catch e As NpgsqlException
-            MsgBox(e.BaseMessage)
-            Exit Sub
+            connection.ConnectionString = "Server=localhost;Port=5432;Database=MyDB;User Id=postgres;Password=Oijoij123;"
+            connection.Open()
+        Catch ex As NpgsqlException
+            MsgBox(ex.BaseMessage)
+            Return
         End Try
 
-        Dim reader As NpgsqlDataReader = command.ExecuteReader
+            sql = "SELECT * FROM " + tname + ";"
+
+            command = New NpgsqlCommand(sql, connection)
+            Try
+                command.ExecuteNonQuery()
+                ' MsgBox("populating: " + sql)
+            Catch e As NpgsqlException
+                MsgBox(e.BaseMessage)
+                Exit Sub
+            End Try
+
+            Dim reader As NpgsqlDataReader = command.ExecuteReader
 
 
-        Dim count As Integer = 0
+            Dim count As Integer = 0
 
-        ' Read value from db and populate excel
-        While reader.Read()
-            For i As Integer = 0 To reader.FieldCount - 1
-                allowEventChanges = False
-                With loc.Cells(count + 3, i + 1)
-                    .value = reader.Item(i)
-                    .Borders(Excel.XlBordersIndex.xlEdgeBottom).Color = Color.LightGray
-                    .Borders(Excel.XlBordersIndex.xlEdgeTop).Color = Color.LightGray
-                    .Borders(Excel.XlBordersIndex.xlEdgeRight).Color = Color.LightGray
-                    .Borders(Excel.XlBordersIndex.xlEdgeLeft).Color = Color.LightGray
+            ' Read value from db and populate excel
+            While reader.Read()
+                For i As Integer = 0 To reader.FieldCount - 1
+                    allowEventChanges = False
+                    With loc.Cells(count + 3, i + 1)
+                        .value = reader.Item(i)
+                        .Borders(Excel.XlBordersIndex.xlEdgeBottom).Color = Color.LightGray
+                        .Borders(Excel.XlBordersIndex.xlEdgeTop).Color = Color.LightGray
+                        .Borders(Excel.XlBordersIndex.xlEdgeRight).Color = Color.LightGray
+                        .Borders(Excel.XlBordersIndex.xlEdgeLeft).Color = Color.LightGray
 
-                End With
+                    End With
 
-                ' loc.Cells(count + 3, i + 1).value = reader.Item(i)
-                ' Borders(Excel.XlBordersIndex.xlEdgeBottom).Color = Color.Gray
-                'apply style to data cells
-                ' loc.Cells(count + 3, i + 1).style = "ValueStyle"
+                    ' loc.Cells(count + 3, i + 1).value = reader.Item(i)
+                    ' Borders(Excel.XlBordersIndex.xlEdgeBottom).Color = Color.Gray
+                    'apply style to data cells
+                    ' loc.Cells(count + 3, i + 1).style = "ValueStyle"
 
-            Next
-            count = count + 1
-        End While
+                Next
+                count = count + 1
+            End While
 
 
-        ' set more styles
-        range.Interior.Color = ColorTranslator.FromHtml("#F2F8FC")
-        'range.Borders(Excel.XlLineStyle.xlContinuous).Color = Color.LightGray
-        loc.Font.Bold = True
-        loc.Value = loc.Value.ToString.ToUpper
-        Dim r As Excel.Range = xlApp.Range(loc.Cells(2, 1), loc.Cells(2, reader.FieldCount)) ' attrib
-        r.Borders(Excel.XlBordersIndex.xlEdgeBottom).Color = Color.Black
+            ' set more styles
+            range.Interior.Color = ColorTranslator.FromHtml("#F2F8FC")
+            'range.Borders(Excel.XlLineStyle.xlContinuous).Color = Color.LightGray
+            loc.Font.Bold = True
+            loc.Value = Me.tname.ToUpper
+            Dim r As Excel.Range = xlApp.Range(loc.Cells(2, 1), loc.Cells(2, reader.FieldCount)) ' attrib
+            r.Borders(Excel.XlBordersIndex.xlEdgeBottom).Color = Color.Black
 
-        allowEventChanges = True
+            allowEventChanges = True
     End Sub
 
 
@@ -364,7 +397,7 @@ Public Class Entry
 
             ' see if changed cell is part of a table
             Dim valueRange As Excel.Range = xlApp.Range(loc.Cells(3, 1), loc.Cells(rows, cols))
-
+            'MsgBox(valueRange.Address)
             If xlApp.Intersect(Target, valueRange) IsNot Nothing Then
                 'MsgBox("found: " + tname)
                 Dim rowOffset = Target.Row - loc.Row + 1
@@ -381,15 +414,14 @@ Public Class Entry
                 deleteRow(updateRange, cols)
                 insertRow(updateRange, cols, vals)
                 populateTableValues()
-                allowEventChanges = True
+
 
             End If
-
+            allowEventChanges = True
         End If
 
 
         Exit Sub
-        allowEventChanges = True
     End Sub
 
 

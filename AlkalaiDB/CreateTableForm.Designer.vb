@@ -34,8 +34,22 @@ Partial Class CreateTableForm
         Me.Label3 = New System.Windows.Forms.Label()
         Me.combo_createFormDataTypes = New System.Windows.Forms.ComboBox()
         Me.GroupBox2 = New System.Windows.Forms.GroupBox()
-        Me.GroupBox3 = New System.Windows.Forms.GroupBox()
+        Me.group_createFormLocal = New System.Windows.Forms.GroupBox()
+        Me.GroupBox1 = New System.Windows.Forms.GroupBox()
+        Me.check_createFormRemote = New System.Windows.Forms.CheckBox()
+        Me.Label4 = New System.Windows.Forms.Label()
+        Me.Label5 = New System.Windows.Forms.Label()
+        Me.Label6 = New System.Windows.Forms.Label()
+        Me.Label7 = New System.Windows.Forms.Label()
+        Me.Label8 = New System.Windows.Forms.Label()
+        Me.txt_localServer = New System.Windows.Forms.TextBox()
+        Me.txt_localPort = New System.Windows.Forms.TextBox()
+        Me.txt_localDB = New System.Windows.Forms.TextBox()
+        Me.txt_localUser = New System.Windows.Forms.TextBox()
+        Me.txt_localPassword = New System.Windows.Forms.TextBox()
         Me.group_createFormEdit.SuspendLayout()
+        Me.group_createFormLocal.SuspendLayout()
+        Me.GroupBox1.SuspendLayout()
         Me.SuspendLayout()
         '
         'btn_createFormCancel
@@ -102,7 +116,7 @@ Partial Class CreateTableForm
         Me.group_createFormEdit.Size = New System.Drawing.Size(203, 136)
         Me.group_createFormEdit.TabIndex = 11
         Me.group_createFormEdit.TabStop = False
-        Me.group_createFormEdit.Text = "GroupBox1"
+        Me.group_createFormEdit.Text = "Edit Atributes"
         '
         'check_createFormNotNull
         '
@@ -151,14 +165,129 @@ Partial Class CreateTableForm
         Me.GroupBox2.TabStop = False
         Me.GroupBox2.Text = "Configure Table"
         '
-        'GroupBox3
+        'group_createFormLocal
         '
-        Me.GroupBox3.Location = New System.Drawing.Point(12, 4)
-        Me.GroupBox3.Name = "GroupBox3"
-        Me.GroupBox3.Size = New System.Drawing.Size(171, 207)
-        Me.GroupBox3.TabIndex = 13
-        Me.GroupBox3.TabStop = False
-        Me.GroupBox3.Text = "GroupBox3"
+        Me.group_createFormLocal.Controls.Add(Me.txt_localPassword)
+        Me.group_createFormLocal.Controls.Add(Me.txt_localUser)
+        Me.group_createFormLocal.Controls.Add(Me.txt_localDB)
+        Me.group_createFormLocal.Controls.Add(Me.txt_localPort)
+        Me.group_createFormLocal.Controls.Add(Me.txt_localServer)
+        Me.group_createFormLocal.Controls.Add(Me.Label8)
+        Me.group_createFormLocal.Controls.Add(Me.Label7)
+        Me.group_createFormLocal.Controls.Add(Me.Label6)
+        Me.group_createFormLocal.Controls.Add(Me.Label5)
+        Me.group_createFormLocal.Controls.Add(Me.Label4)
+        Me.group_createFormLocal.Enabled = False
+        Me.group_createFormLocal.Location = New System.Drawing.Point(4, 55)
+        Me.group_createFormLocal.Name = "group_createFormLocal"
+        Me.group_createFormLocal.Size = New System.Drawing.Size(187, 156)
+        Me.group_createFormLocal.TabIndex = 13
+        Me.group_createFormLocal.TabStop = False
+        Me.group_createFormLocal.Text = "Local Connection"
+        '
+        'GroupBox1
+        '
+        Me.GroupBox1.Controls.Add(Me.check_createFormRemote)
+        Me.GroupBox1.ForeColor = System.Drawing.SystemColors.ControlDark
+        Me.GroupBox1.Location = New System.Drawing.Point(4, 4)
+        Me.GroupBox1.Name = "GroupBox1"
+        Me.GroupBox1.Size = New System.Drawing.Size(191, 207)
+        Me.GroupBox1.TabIndex = 15
+        Me.GroupBox1.TabStop = False
+        Me.GroupBox1.Text = "Configure Host"
+        '
+        'check_createFormRemote
+        '
+        Me.check_createFormRemote.AutoSize = True
+        Me.check_createFormRemote.Checked = True
+        Me.check_createFormRemote.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.check_createFormRemote.ForeColor = System.Drawing.SystemColors.ActiveCaptionText
+        Me.check_createFormRemote.Location = New System.Drawing.Point(6, 25)
+        Me.check_createFormRemote.Name = "check_createFormRemote"
+        Me.check_createFormRemote.Size = New System.Drawing.Size(142, 17)
+        Me.check_createFormRemote.TabIndex = 0
+        Me.check_createFormRemote.Text = "Use Remote Connection"
+        Me.check_createFormRemote.UseVisualStyleBackColor = True
+        '
+        'Label4
+        '
+        Me.Label4.AutoSize = True
+        Me.Label4.Location = New System.Drawing.Point(12, 31)
+        Me.Label4.Name = "Label4"
+        Me.Label4.Size = New System.Drawing.Size(38, 13)
+        Me.Label4.TabIndex = 0
+        Me.Label4.Text = "Server"
+        '
+        'Label5
+        '
+        Me.Label5.AutoSize = True
+        Me.Label5.Location = New System.Drawing.Point(12, 54)
+        Me.Label5.Name = "Label5"
+        Me.Label5.Size = New System.Drawing.Size(26, 13)
+        Me.Label5.TabIndex = 1
+        Me.Label5.Text = "Port"
+        '
+        'Label6
+        '
+        Me.Label6.AutoSize = True
+        Me.Label6.Location = New System.Drawing.Point(12, 78)
+        Me.Label6.Name = "Label6"
+        Me.Label6.Size = New System.Drawing.Size(53, 13)
+        Me.Label6.TabIndex = 2
+        Me.Label6.Text = "Database"
+        '
+        'Label7
+        '
+        Me.Label7.AutoSize = True
+        Me.Label7.Location = New System.Drawing.Point(12, 100)
+        Me.Label7.Name = "Label7"
+        Me.Label7.Size = New System.Drawing.Size(43, 13)
+        Me.Label7.TabIndex = 3
+        Me.Label7.Text = "User ID"
+        '
+        'Label8
+        '
+        Me.Label8.AutoSize = True
+        Me.Label8.Location = New System.Drawing.Point(12, 123)
+        Me.Label8.Name = "Label8"
+        Me.Label8.Size = New System.Drawing.Size(53, 13)
+        Me.Label8.TabIndex = 4
+        Me.Label8.Text = "Password"
+        '
+        'txt_localServer
+        '
+        Me.txt_localServer.Location = New System.Drawing.Point(70, 28)
+        Me.txt_localServer.Name = "txt_localServer"
+        Me.txt_localServer.Size = New System.Drawing.Size(100, 20)
+        Me.txt_localServer.TabIndex = 5
+        '
+        'txt_localPort
+        '
+        Me.txt_localPort.Location = New System.Drawing.Point(71, 51)
+        Me.txt_localPort.Name = "txt_localPort"
+        Me.txt_localPort.Size = New System.Drawing.Size(100, 20)
+        Me.txt_localPort.TabIndex = 6
+        '
+        'txt_localDB
+        '
+        Me.txt_localDB.Location = New System.Drawing.Point(71, 74)
+        Me.txt_localDB.Name = "txt_localDB"
+        Me.txt_localDB.Size = New System.Drawing.Size(100, 20)
+        Me.txt_localDB.TabIndex = 7
+        '
+        'txt_localUser
+        '
+        Me.txt_localUser.Location = New System.Drawing.Point(71, 97)
+        Me.txt_localUser.Name = "txt_localUser"
+        Me.txt_localUser.Size = New System.Drawing.Size(100, 20)
+        Me.txt_localUser.TabIndex = 8
+        '
+        'txt_localPassword
+        '
+        Me.txt_localPassword.Location = New System.Drawing.Point(71, 120)
+        Me.txt_localPassword.Name = "txt_localPassword"
+        Me.txt_localPassword.Size = New System.Drawing.Size(100, 20)
+        Me.txt_localPassword.TabIndex = 16
         '
         'CreateTableForm
         '
@@ -166,7 +295,7 @@ Partial Class CreateTableForm
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.CancelButton = Me.btn_createFormCancel
         Me.ClientSize = New System.Drawing.Size(552, 251)
-        Me.Controls.Add(Me.GroupBox3)
+        Me.Controls.Add(Me.group_createFormLocal)
         Me.Controls.Add(Me.txt_createFormTableName)
         Me.Controls.Add(Me.list_createFormAttributes)
         Me.Controls.Add(Me.Label2)
@@ -175,11 +304,16 @@ Partial Class CreateTableForm
         Me.Controls.Add(Me.btn_createFormCancel)
         Me.Controls.Add(Me.group_createFormEdit)
         Me.Controls.Add(Me.GroupBox2)
+        Me.Controls.Add(Me.GroupBox1)
         Me.ForeColor = System.Drawing.SystemColors.ControlText
         Me.Name = "CreateTableForm"
-        Me.Text = "CreateTableForm"
+        Me.Text = "Create Table"
         Me.group_createFormEdit.ResumeLayout(False)
         Me.group_createFormEdit.PerformLayout()
+        Me.group_createFormLocal.ResumeLayout(False)
+        Me.group_createFormLocal.PerformLayout()
+        Me.GroupBox1.ResumeLayout(False)
+        Me.GroupBox1.PerformLayout()
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -196,5 +330,17 @@ Partial Class CreateTableForm
     Friend WithEvents Label3 As System.Windows.Forms.Label
     Friend WithEvents combo_createFormDataTypes As System.Windows.Forms.ComboBox
     Friend WithEvents GroupBox2 As System.Windows.Forms.GroupBox
-    Friend WithEvents GroupBox3 As System.Windows.Forms.GroupBox
+    Friend WithEvents group_createFormLocal As System.Windows.Forms.GroupBox
+    Friend WithEvents GroupBox1 As System.Windows.Forms.GroupBox
+    Friend WithEvents check_createFormRemote As System.Windows.Forms.CheckBox
+    Friend WithEvents txt_localPassword As System.Windows.Forms.TextBox
+    Friend WithEvents txt_localUser As System.Windows.Forms.TextBox
+    Friend WithEvents txt_localDB As System.Windows.Forms.TextBox
+    Friend WithEvents txt_localPort As System.Windows.Forms.TextBox
+    Friend WithEvents txt_localServer As System.Windows.Forms.TextBox
+    Friend WithEvents Label8 As System.Windows.Forms.Label
+    Friend WithEvents Label7 As System.Windows.Forms.Label
+    Friend WithEvents Label6 As System.Windows.Forms.Label
+    Friend WithEvents Label5 As System.Windows.Forms.Label
+    Friend WithEvents Label4 As System.Windows.Forms.Label
 End Class

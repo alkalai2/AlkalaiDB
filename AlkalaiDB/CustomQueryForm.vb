@@ -24,6 +24,10 @@ Public Class CustomQueryForm
 
 
         reader = executeSQL(txt_customQuery.Text, newTname)
+        If (IsNothing(reader)) Then
+            Return
+        End If
+
 
         Dim newAttributes(reader.FieldCount - 1) As String
         Dim newTypes(reader.FieldCount - 1) As String
@@ -32,8 +36,8 @@ Public Class CustomQueryForm
             For i As Integer = 0 To reader.FieldCount - 1
                 newAttributes(i) = reader.GetName(i)
                 newTypes(i) = reader.GetProviderSpecificFieldType(i).ToString
-                MsgBox(newAttributes(i))
-                MsgBox(newTypes(i))
+                'MsgBox(newAttributes(i))
+                'MsgBox(newTypes(i))
                 With loc.Cells(count + 1 + offset, i + 1)
                     .value = reader.Item(i)
                     .Borders(Excel.XlBordersIndex.xlEdgeBottom).Color = Color.LightGray
@@ -51,7 +55,7 @@ Public Class CustomQueryForm
 
         ' if making a new table, set newtable name + attributes
         If (newTable) Then
-            
+
 
             With loc
                 .Value = newTname.ToUpper
@@ -68,12 +72,17 @@ Public Class CustomQueryForm
 
             entry = New Entry(range, newAttributes)
             entry.onChangeEvent()
+            entry.allowEventChanges = True
             entry.types = getTableTypes(entry)
-            MsgBox("new table made with address " + entry.range.Address)
+            list_of_entries.Add(entry)
+
+
+            MsgBox("Table '" + entry.tname.ToUpper + "' created")
+            MsgBox("Table address : " + entry.range.Address)
             'styles
             range.Interior.Color = ColorTranslator.FromHtml("#F2F8FC")
         End If
-        
+
         Me.Close()
     End Sub
 

@@ -18,7 +18,7 @@ Module Handler
 
                     If (loc.Columns.Count = e.cols) Then
                         found = e
-                        MsgBox("found: " + e.tname)
+                        'MsgBox("found: " + e.tname)
                         Return found
                     End If
                 End If
@@ -26,12 +26,12 @@ Module Handler
                 ' for row deletions, row must be within table
                 If xlApp.Intersect(loc(1).Cells(1, 1), e.range) IsNot Nothing Then
                     found = e
-                    MsgBox("found: " + e.tname)
+                    'MsgBox("found: " + e.tname)
                     Return found
                 End If
             End If
         Next
-        MsgBox("Error \n For Insertions please highlight a row directly beneath an existing table \n For Deletions please highilight a row in an existing table")
+        MsgBox("Error: For Insertions please highlight a row directly beneath an existing table. For Deletions please highilight a row in an existing table")
         Return Nothing
     End Function
 
@@ -39,7 +39,7 @@ Module Handler
         Dim found As Entry
         For i As Integer = 0 To list_of_entries.Count
             If xlApp.Intersect(loc, list_of_entries(i).range) IsNot Nothing Then
-                MsgBox("found table " + list_of_entries(i).tname)
+                'MsgBox("found table " + list_of_entries(i).tname)
                 found = list_of_entries(i)
                 list_of_entries.RemoveAt(i)
                 Return found
@@ -55,7 +55,7 @@ Module Handler
         Dim connection As NpgsqlConnection = New NpgsqlConnection()
         Dim command, command2 As NpgsqlCommand
         Dim reader As NpgsqlDataReader
-        connection.ConnectionString = "Server=localhost;Port=5432;Database=VB;User Id=postgres;Password=Oijoij123;"
+        connection.ConnectionString = "Server=localhost;Port=5432;Database=MyDB;User Id=postgres;Password=Oijoij123;"
         connection.Open()
 
         'command = New NpgsqlCommand(sql, connection)
@@ -82,7 +82,7 @@ Module Handler
             Return Nothing
             Exit Function
         End Try
-        MsgBox("your sql:   " + sql)
+        MsgBox("Executing:  ' " + sql + " ' ")
 
 
         Return reader

@@ -9,7 +9,7 @@
         txt_createFormTableName.Text = entry.tname
         With combo_createFormDataTypes.Items
             .Add("real")
-            .Add("int")
+            .Add("integer")
             .Add("character(30)")
             .Add("date")
             .Add("serial")
@@ -17,6 +17,13 @@
         For Each a In entry.attr
             list_createFormAttributes.Items.Add(a)
         Next
+
+        'populate localhost config
+        txt_localServer.Text = "localhost"
+        txt_localPort.Text = "5432"
+        txt_localDB.Text = "MyDB"
+        txt_localUser.Text = "postgres"
+        txt_localPassword.Text = "*********"
 
     End Sub
 
@@ -42,7 +49,7 @@
             entry.allowEventChanges = False
             entry.populateTableValues()
             ' change event for tables
-            MsgBox(entry.range.ToString)
+
             entry.onChangeEvent()
         End If
 
@@ -97,5 +104,13 @@
 
     Private Sub txt_createFormTableName_TextChanged(sender As Object, e As EventArgs) Handles txt_createFormTableName.TextChanged
         entry.tname = txt_createFormTableName.Text
+    End Sub
+
+    Private Sub check_createFormRemote_CheckedChanged(sender As Object, e As EventArgs) Handles check_createFormRemote.CheckedChanged
+        If (check_createFormRemote.Checked = True) Then
+            group_createFormLocal.Enabled = False
+        Else
+            group_createFormLocal.Enabled = True
+        End If
     End Sub
 End Class

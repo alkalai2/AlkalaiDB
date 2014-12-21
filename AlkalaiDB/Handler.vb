@@ -1,13 +1,21 @@
-﻿Imports System.Collections
+﻿'
+'Written by J.Alkalai 12/20/14
+'
+
+Imports System.Collections
 Imports Npgsql
 
 Module Handler
-    ' keep track of created entries
+    
+    ' Module holds list of previously created entries
+    ' also includes a test 'Execute SQL' funct that is only used in the Custom Query Form (meant to implement throughout)
+
 
     Public list_of_entries As New ArrayList()
 
-
-    ' inserting : Flag that indicates an insertion is being requested. For Deletes, the flag is set to False
+    ' Search through list for prev created tables (used in Insert/Delete rows)
+    ' params: loc  - location of first cell of selection
+    '         inserting - True if called by InsertRow, false if by DeleteRow
     Public Function find_entry(loc As Excel.Range, inserting As Boolean)
         Dim found As Entry
         For Each e As Entry In list_of_entries
@@ -35,6 +43,7 @@ Module Handler
         Return Nothing
     End Function
 
+    ' find Entry in list and remove it. Used in 'DeleteTable'
     Public Function remove_entry(loc As Excel.Range)
         Dim found As Entry
         For i As Integer = 0 To list_of_entries.Count
@@ -50,6 +59,7 @@ Module Handler
     End Function
 
 
+    ' Test function to put execution of SQL in single place. So far only used in CustomQuery.vb
     Public Function executeSQL(sql As String, Optional ByVal newTname As String = Nothing)
 
         Dim connection As NpgsqlConnection = New NpgsqlConnection()

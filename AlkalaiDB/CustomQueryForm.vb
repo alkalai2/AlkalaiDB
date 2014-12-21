@@ -1,7 +1,12 @@
-﻿Imports Npgsql
+﻿'
+' Written by J.Alkalai on 12/20/14
+'
+
+Imports Npgsql
 Imports System.Drawing
 
 Public Class CustomQueryForm
+    ' form handles custom queries. If new table is requested, create table Entry, set styles, add to list_of_entries
     Public newTable As Boolean
 
     Private Sub btn_createCustomQuery_Click(sender As Object, e As EventArgs) Handles btn_createCustomQuery.Click
@@ -22,13 +27,14 @@ Public Class CustomQueryForm
             offset = 2
         End If
 
-
+        ' use reader to process output of SQL
         reader = executeSQL(txt_customQuery.Text, newTname)
         If (IsNothing(reader)) Then
             Return
         End If
 
 
+        ' create a new table
         Dim newAttributes(reader.FieldCount - 1) As String
         Dim newTypes(reader.FieldCount - 1) As String
         Dim count As Integer
@@ -40,6 +46,7 @@ Public Class CustomQueryForm
                 'MsgBox(newTypes(i))
                 With loc.Cells(count + 1 + offset, i + 1)
                     .value = reader.Item(i)
+                    ' set styles
                     .Borders(Excel.XlBordersIndex.xlEdgeBottom).Color = Color.LightGray
                     .Borders(Excel.XlBordersIndex.xlEdgeTop).Color = Color.LightGray
                     .Borders(Excel.XlBordersIndex.xlEdgeRight).Color = Color.LightGray
@@ -78,7 +85,7 @@ Public Class CustomQueryForm
 
 
             MsgBox("Table '" + entry.tname.ToUpper + "' created")
-            MsgBox("Table address : " + entry.range.Address)
+            'MsgBox("Table address : " + entry.range.Address)
             'styles
             range.Interior.Color = ColorTranslator.FromHtml("#F2F8FC")
         End If

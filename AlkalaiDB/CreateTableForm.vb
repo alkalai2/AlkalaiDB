@@ -1,6 +1,11 @@
 ﻿Public Class CreateTableForm
+
+    ' Handles configuration and creation of new DB tables
+    ' Note: Remote v Local Connection setup not implement, concept shown for demo purposes
+
     Public entry As Entry
     Public range As Excel.Range
+
 
     Private Sub CreateTableForm_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         range = xlApp.Range(xlApp.ActiveCell, xlApp.ActiveCell.Cells(xlApp.Selection.rows.count, xlApp.Selection.columns.count))
@@ -18,7 +23,7 @@
             list_createFormAttributes.Items.Add(a)
         Next
 
-        'populate localhost config
+        'populate localhost config - hardcode for now
         txt_localServer.Text = "localhost"
         txt_localPort.Text = "5432"
         txt_localDB.Text = "MyDB"
@@ -27,9 +32,10 @@
 
     End Sub
 
+    ' create new DB table
     Private Sub btn_createFormCreate_Click(sender As Object, e As EventArgs) Handles btn_createFormCreate.Click
 
-        ' check pk
+        ' check there is not more than one pk
         Dim pks As Integer = 0
         For i = 0 To entry.constr.Count - 1
             If (InStr(entry.constr(i), "PRIMARY KEY")) Then
@@ -49,19 +55,18 @@
             entry.allowEventChanges = False
             entry.populateTableValues()
             ' change event for tables
-
             entry.onChangeEvent()
         End If
 
-        
-
         Me.Close()
     End Sub
+
     Private Sub btn_createFormCancel_Click(sender As Object, e As EventArgs) Handles btn_createFormCancel.Click
         Me.Close()
     End Sub
 
     Private Sub list_createFormAttributes_SelectedIndexChanged(sender As Object, e As EventArgs) Handles list_createFormAttributes.SelectedIndexChanged
+    
         group_createFormEdit.Enabled = True
         Dim index As Integer = list_createFormAttributes.SelectedIndex
         For i As Integer = 0 To combo_createFormDataTypes.Items.Count - 1

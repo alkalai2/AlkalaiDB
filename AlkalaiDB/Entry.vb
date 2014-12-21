@@ -11,11 +11,10 @@ Public Class Entry
     '   Will hold all the data pretaining to an inputted table object
     '       loc    - location of table ( upper-left cell of selection area )
     '       tname  - Table Name
-    '       rows   - row dimension of table
     '       attr   - array of attribute values (columns)
     '       types  - array of attribute types
     '       constr - array of attribute constraints (PRIMARY KEY, NOT NULL)
-
+    '       rows   - row dimension of table
     '       cols   - column dimenions of table
 
     Public xlApp As Excel.Application = Globals.ThisAddIn.Application
@@ -33,6 +32,8 @@ Public Class Entry
 
     ' to be able to enable / disable change listener
     Public allowEventChanges = False
+
+
     Public Sub New(r As Excel.Range, Optional ByVal attr As String() = Nothing)
         range = r
         loc = r(1)
@@ -49,7 +50,7 @@ Public Class Entry
 
         types = getTableTypes(Me)
 
-        ' intialize constr jankily
+        ' intialize constr to empty strings
         Dim temp(cols) As String
         For i As Integer = 0 To cols - 1
             temp(i) = " "
@@ -76,6 +77,7 @@ Public Class Entry
     '
 
     Public Function createTable()
+
         Dim connection As NpgsqlConnection
         Dim command As NpgsqlCommand
         Dim sql As String
@@ -161,6 +163,7 @@ Public Class Entry
     End Function
 
     Public Function deleteTable()
+
         Dim connection As NpgsqlConnection = New NpgsqlConnection()
         Dim command As NpgsqlCommand
         Dim sql As String
@@ -188,7 +191,7 @@ Public Class Entry
 
     End Function
 
-    ' 
+     
     Public Function insertRow(r As Excel.Range, len As Integer, Optional ByVal input As String() = Nothing)
         Dim connection As NpgsqlConnection = New NpgsqlConnection()
         Dim command As NpgsqlCommand
@@ -208,6 +211,7 @@ Public Class Entry
         Else
             vals = input
         End If
+
         ' create SQL insert statement for each row
         Dim sep As String = ""
         sql = "INSERT INTO " + tname + " Values("
@@ -232,6 +236,8 @@ Public Class Entry
             insertRow = 0
             Exit Function
         End Try
+
+        ' increase table range by 1
         Me.range = xlApp.Range(loc, loc.Cells(rows + 1, cols))
         Me.rows = rows + 1
         insertRow = 1
@@ -257,6 +263,9 @@ Public Class Entry
         Dim vals As String() = getRowValues(r, len)
         temp = r.Address
 
+
+        ' construct SQL
+
         sql = "DELETE from " + tname + " where "
 
         Dim foundPK = False
@@ -275,7 +284,7 @@ Public Class Entry
             End If
         Next
 
-        ' no primary key, use first attribute
+        ' if no primary key, use first attribute
         If (foundPK = False) Then
             If InStr(types(0), "character(30)") > 0 Then
                 ' add quotes for strings
@@ -285,6 +294,7 @@ Public Class Entry
             End If
         End If
 
+        ' Execute SQL
         command = New NpgsqlCommand(sql, connection)
         '  MsgBox("executed  " + sql)
         Try
@@ -298,7 +308,7 @@ Public Class Entry
 
         End Try
 
-
+        'clear range
         Dim toDelete As Excel.Range = xlApp.Range(r, r.Cells(rows, cols))
         toDelete.Clear()
 
@@ -310,13 +320,10 @@ Public Class Entry
     End Function
 
     Public Sub populateTableValues()
+        ' used to repopulate an Excel region with DB table values
 
         Dim sheet As Excel.Worksheet = xlApp.ActiveSheet
-        ' Dim style As Excel.Style = xlApp.ActiveWorkbook.Styles.Add("ValueStyle")
-        ' style.Interior.Color = ColorTranslator.ToOle(ColorTranslator.FromHtml("#f5f5f5"))
-        ' style.Borders(Excel.XlLineStyle.xlContinuous).Color = Color.LightGray
-
-
+        
         Dim connection As NpgsqlConnection = New NpgsqlConnection()
         Dim command As NpgsqlCommand
         Dim sql As String
@@ -329,6 +336,8 @@ Public Class Entry
             Return
         End Try
 
+            ' Construct SQL, get all values from table
+
             sql = "SELECT * FROM " + tname + ";"
 
             command = New NpgsqlCommand(sql, connection)
@@ -340,6 +349,7 @@ Public Class Entry
                 Exit Sub
             End Try
 
+            ' use reader to get ouput of SQL above
             Dim reader As NpgsqlDataReader = command.ExecuteReader
 
 
@@ -351,6 +361,7 @@ Public Class Entry
                     allowEventChanges = False
                     With loc.Cells(count + 3, i + 1)
                         .value = reader.Item(i)
+                        'set styles
                         .Borders(Excel.XlBordersIndex.xlEdgeBottom).Color = Color.LightGray
                         .Borders(Excel.XlBordersIndex.xlEdgeTop).Color = Color.LightGray
                         .Borders(Excel.XlBordersIndex.xlEdgeRight).Color = Color.LightGray
@@ -381,6 +392,7 @@ Public Class Entry
 
 
 
+    ' Listening Event setup, used to provide DB changes when a single Excel value is changed
 
     Public Sub onChangeEvent()
         Dim EventDel_CellsChange As Excel.DocEvents_ChangeEventHandler
@@ -423,14 +435,6 @@ Public Class Entry
 
         Exit Sub
     End Sub
-
-
-
-
-
-
-
-
 
 
 End Class
